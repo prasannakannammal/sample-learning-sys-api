@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" 
+xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core 
+	http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce 
+http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<flow name="retrieve-all-employee-details" doc:id="2ad176c8-8856-485d-960a-cb94e9ee53bc" >
+		<salesforce:query doc:name="Query" doc:id="025d51b3-11fd-4237-96a1-0baf1a3cb89a" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Name,
+ AccountNumber__c,
+ Email__c, 
+ AnnualRevenue,
+ Risk_Level__c,
+ Risk_Score__c,
+ Phone 
+ FROM Account]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="05b75b1d-8283-4ed1-a033-4271086b3c01" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="global-error-handler" />
+	</flow>
+	<flow name="retrieve-by-uriparam" doc:id="4b34af68-3c19-4de0-80e5-aeca958c7be9" >
+		<salesforce:query doc:name="Query" doc:id="fc7d90cc-2b0f-430c-8a51-b93350a5400e" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Name,
+ AccountNumber__c, 
+ AnnualRevenue,
+ Email__c,
+ Risk_Level__c,
+ Risk_Score__c,
+ Phone 
+ FROM Account
+ WHERE AccountNumber__c = ':AccountNumber']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[{
+	"AccountNumber": attributes.uriParams.Id
+	
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="4de1ebb9-a615-4d56-8984-d88dc56ae012" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="global-error-handler" />
+	</flow>
+</mule>

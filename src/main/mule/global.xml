@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" 
+ xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/mule-apikit 
+http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http 
+http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/salesforce 
+http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/core 
+http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	
+	
+	<http:listener-config name="sample-learning-sys-api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="sample-learning-sys-api-config" api="resource::f21dc6a5-9c8c-4cd0-8eb7-f13a59191dc9:sample-learning-sys-api:1.0.0:raml:zip:sample-learning-sys-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="753e9922-4905-4bf0-9ebf-1f8fbffae3c2" >
+		<salesforce:oauth-client-credentials-connection >
+			<salesforce:oauth-client-credentials clientId="${secure::salesforce.client_id}" clientSecret="${secure::salesforce.client_secrete}" tokenUrl="${secure::salesforce.token_url}" />
+		</salesforce:oauth-client-credentials-connection>
+	</salesforce:sfdc-config>
+	
+	<configuration doc:name="Configuration" doc:id="e267f562-7bf8-411c-b219-73d93049d46b" defaultErrorHandler-ref="global-error-handler" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e924b984-b24e-4d34-8a75-76dd310bb88f" file="Properties/${env}.yaml" key="${secureKey}"/>
+	<error-handler name="global-error-handler">
+	<on-error-propagate type="SALESFORCE:NOT_FOUND" doc:name="On Error Propagate - Not Found">
+    <set-variable variableName="httpStatus" value="404" doc:name="Set 404 Status"/>
+    <ee:transform doc:name="Build 404 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: error.description,
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+
+<on-error-propagate type="SALESFORCE:INVALID_INPUT" doc:name="On Error Propagate - Invalid Input">
+    <set-variable variableName="httpStatus" value="400" doc:name="Set 400 Status"/>
+    <ee:transform doc:name="Build 400 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: error.description,
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+
+<on-error-propagate type="SALESFORCE:MUTUAL_AUTHENTICATION_FAILED" doc:name="On Error Propagate - Auth Failed">
+    <set-variable variableName="httpStatus" value="401" doc:name="Set 401 Status"/>
+    <ee:transform doc:name="Build 401 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: error.description,
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+
+<on-error-propagate type="SALESFORCE:INSUFFICIENT_PERMISSIONS" doc:name="On Error Propagate - Forbidden">
+    <set-variable variableName="httpStatus" value="403" doc:name="Set 403 Status"/>
+    <ee:transform doc:name="Build 403 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: error.description,
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+
+<on-error-propagate type="SALESFORCE:LIMIT_EXCEEDED" doc:name="On Error Propagate - Limit Exceeded">
+    <set-variable variableName="httpStatus" value="429" doc:name="Set 429 Status"/>
+    <ee:transform doc:name="Build 429 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: error.description,
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+
+<on-error-propagate type="SALESFORCE:INVALID_RESPONSE, SALESFORCE:OPERATION_NOT_SUPPORTED" doc:name="On Error Propagate - Bad Gateway">
+    <set-variable variableName="httpStatus" value="502" doc:name="Set 502 Status"/>
+    <ee:transform doc:name="Build 502 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: error.description,
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+
+<on-error-propagate type="SALESFORCE:CONNECTIVITY, SALESFORCE:COMMUNICATION, SALESFORCE:UNAVAILABLE" doc:name="On Error Propagate - Service Unavailable">
+    <set-variable variableName="httpStatus" value="503" doc:name="Set 503 Status"/>
+    <ee:transform doc:name="Build 503 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: error.description,
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+
+<on-error-propagate type="SALESFORCE:TIMEOUT, SALESFORCE:RETRY_EXHAUSTED" doc:name="On Error Propagate - Timeout">
+    <set-variable variableName="httpStatus" value="504" doc:name="Set 504 Status"/>
+    <ee:transform doc:name="Build 504 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: error.description,
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+
+
+<on-error-propagate type="MULE:STREAM_MAXIMUM_SIZE_EXCEEDED" doc:name="On Error Propagate - Stream Too Large">
+    <set-variable variableName="httpStatus" value="413" doc:name="Set 413 Status"/>
+    <ee:transform doc:name="Build 413 Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace,
+        code: error.errorType.identifier,
+        message: "Response data is too large to process",
+        details: error.description default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+<on-error-propagate type="ANY" doc:name="On Error Propagate - Any">
+    <set-variable variableName="httpStatus" doc:name="Set 500 Status"
+        value="#[500]"/>
+
+    <ee:transform doc:name="Build Dynamic Error Response">
+        <ee:message>
+            <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    status: vars.httpStatus,
+    success: false,
+    error: {
+        source: error.errorType.namespace default "UNKNOWN",
+        code: error.errorType.identifier default "UNKNOWN",
+        message: error.description default "Unexpected error occurred",
+        details: error.detailedDescription default ""
+    },
+    timestamp: now()
+}]]></ee:set-payload>
+        </ee:message>
+    </ee:transform>
+</on-error-propagate>
+</error-handler>	
+</mule>
