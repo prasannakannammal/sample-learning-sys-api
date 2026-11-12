@@ -30,33 +30,32 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 			</plugin>
-		
 			<plugin>
-    <groupId>org.mule.tools.maven</groupId>
-    <artifactId>mule-maven-plugin</artifactId>
-    <version>${mule.maven.plugin.version}</version>
-    <extensions>true</extensions>
-    <configuration>
-        <cloudHubDeployment>
-            <uri>https://anypoint.mulesoft.com</uri>
-            <muleVersion>${mule.version}</muleVersion>
-            <!-- Deploy User Parameter -->
-            <username>${anypoint.username}</username>
-            <password>${anypoint.password}</password>
-
-            <environment>${env}</environment>
-            <applicationName>${appname}</applicationName>
-            <businessGroup>${business}</businessGroup>
-            <workerType>${vCore}</workerType>
-            <workers>${workers}</workers>
-            <objectStoreV2>true</objectStoreV2>
-        </cloudHubDeployment>
-        <classifier>mule-application</classifier>
-    </configuration>
+  <groupId>org.mule.tools.maven</groupId>
+  <artifactId>mule-maven-plugin</artifactId>
+  <version>${mule.maven.plugin.version}</version>
+  <extensions>true</extensions>
+  <configuration>
+    <classifier>mule-application</classifier>
+    <cloudHubDeployment>
+      <uri>https://anypoint.mulesoft.com</uri>
+      <muleVersion>${app.runtime}</muleVersion>
+      <connectedAppClientId>${anypoint.client.id}</connectedAppClientId>
+      <connectedAppClientSecret>${anypoint.client.secret}</connectedAppClientSecret>
+      <connectedAppGrantType>client_credentials</connectedAppGrantType>
+      <environment>${anypoint.env}</environment>
+      <businessGroup>${anypoint.bg}</businessGroup>
+      <applicationName>${app.name}</applicationName>
+      <workerType>Micro</workerType>
+      <workers>1</workers>
+      <objectStoreV2>true</objectStoreV2>
+      <properties>
+        <env>dev</env>
+        <secure.key>${secureKey}</secure.key>
+      </properties>
+    </cloudHubDeployment>
+  </configuration>
 </plugin>
-			
-			
-			
 		</plugins>
 	</build>
 
@@ -96,6 +95,12 @@
 			<groupId>com.mulesoft.modules</groupId>
 			<artifactId>mule-secure-configuration-property-module</artifactId>
 			<version>1.3.2</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.connectors</groupId>
+			<artifactId>mule4-google-calendar-connector</artifactId>
+			<version>1.2.3</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 	</dependencies>

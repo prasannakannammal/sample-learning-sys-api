@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" 
- xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
-	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" 
+ xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
 http://www.mulesoft.org/schema/mule/mule-apikit 
 http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
@@ -17,7 +17,8 @@ http://www.mulesoft.org/schema/mule/salesforce
 http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
 http://www.mulesoft.org/schema/mule/core 
 http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
 	
 	
 	<http:listener-config name="sample-learning-sys-api-httpListenerConfig">
@@ -33,6 +34,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	
 	<configuration doc:name="Configuration" doc:id="e267f562-7bf8-411c-b219-73d93049d46b" defaultErrorHandler-ref="global-error-handler" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e924b984-b24e-4d34-8a75-76dd310bb88f" file="Properties/${env}.yaml" key="${secureKey}"/>
+	<api-gateway:autodiscovery apiId="21293568" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="1e89ec96-0ed3-4f7e-9e49-3eabd66c97a9" flowRef="sample-learning-sys-api-main" />
 	<error-handler name="global-error-handler">
 	<on-error-propagate type="SALESFORCE:NOT_FOUND" doc:name="On Error Propagate - Not Found">
     <set-variable variableName="httpStatus" value="404" doc:name="Set 404 Status"/>
