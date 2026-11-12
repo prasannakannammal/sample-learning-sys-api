@@ -7,10 +7,9 @@ pipeline {
       steps {
         checkout scm
         withCredentials([
-          string(credentialsId: 'anypoint-client-id',     variable: 'CID'),
-          string(credentialsId: 'anypoint-client-secret', variable: 'CSEC'),
-          string(credentialsId: 'mule-secure-key',        variable: 'SKEY')
-        ]) {
+  usernamePassword(credentialsId: 'anypoint-connected-app', usernameVariable: 'CID', passwordVariable: 'CSEC'),
+  string(credentialsId: 'mule-secure-key', variable: 'SKEY')
+]) {
           configFileProvider([configFile(fileId: 'maven-settings', variable: 'MAVEN_SETTINGS')]) {
             bat '''set "EXCHANGE_PASS=%CID%~?~%CSEC%"
 mvn clean deploy -DmuleDeploy -DskipTests -s "%MAVEN_SETTINGS%" ^
